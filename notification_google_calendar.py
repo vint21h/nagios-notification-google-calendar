@@ -49,7 +49,7 @@ def parse_cmd_line():
     """
 
     # build options and help
-    version = "%%prog %s" % (__version__)
+    version = "%%prog %s" % __version__
     parser = OptionParser(version=version)
     parser.add_option("-r", "--recipient", action="store", dest="recipient",
                                         type="string", default="",
@@ -74,6 +74,5 @@ def parse_cmd_line():
 
 
 if __name__ == "__main__":
-    # get options, check and parse config file and send message
+    # get options and send message
     options = parse_cmd_line()
-    send_message(parse_config(check_config_file(options.config)), options.recipient, options.message)
