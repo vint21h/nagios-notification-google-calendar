@@ -1,0 +1,30 @@
+# nagios-notification-google-calendar
+# .gitignore
+
+.*.swp
+*.pyc
+*.log
+*.pot
+*.pyo
+*.pyd
+*~
+*.orig
+*.bak
+.DS_Store
+*.save
+
+.idea/*
+*sublime*
+*geany*
+*komodo*
+*-venv/
+build/*
+dist/*
+*.egg-info/*
+tmp/*
+logs/*
+parts
+.project
+.pydevproject
+.settings/*
+media/*
