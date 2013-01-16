@@ -29,9 +29,16 @@ import sys
 try:
     import os
     from optparse import OptionParser
+    import ConfigParser
+
+    from oauth2client.client import flow_from_clientsecrets
+    from oauth2client.file import Storage
+
 except ImportError, err:
     sys.stderr.write("ERROR: Couldn't load module. %s\n" % err)
     sys.exit(-1)
+
+__all__ = ['main', ]
 
 # metadata
 __author__ = "Alexei Andrushievich"
@@ -51,28 +58,110 @@ def parse_cmd_line():
     # build options and help
     version = "%%prog %s" % __version__
     parser = OptionParser(version=version)
-    parser.add_option("-r", "--recipient", action="store", dest="recipient",
+    parser.add_option("-u", "--username", action="store", dest="username",
                                         type="string", default="",
                                         metavar="RECIPIENT",
-                                        help="message recipient")
+                                        help="user")
     parser.add_option("-m", "--message", metavar="MESSAGE", action="store",
                                         type="string", dest="message",
                                         default="", help="message text")
-    parser.add_option("-q", "--quiet", metavar="QUIET", action="store_false",
+    parser.add_option("-c", "--config", metavar="CONFIG", action="store",
+                                        type="string", dest="config",
+                                        help="path to config file")
+    parser.add_option("-q", "--quiet", metavar="QUIET", action="store_true",
                                         default=False, dest="quiet",
                                         help="be quiet")
+    parser.add_option("-g", "--get-google-credentials", metavar="GET-GOOGLE-CREDENTIALS",
+                                        action="store_true", default=False,
+                                        dest="get_google_credentials",
+                                        help="get google API credentials for user")
 
     options = parser.parse_args(sys.argv)[0]
 
+    mandatories = ["username", "config", ]
     # check mandatory command line options supplied
-    mandatories = ["recipient", "message", ]
+    if not options.get_google_credentials:
+        mandatories.append("message")  # set message option required when sending message
     if not all(options.__dict__[mandatory] for mandatory in mandatories):
-        sys.stdout.write("Mandatory command line option missing\n")
+        sys.stdout.write(u"Mandatory command line option missing\n")
         sys.exit(0)
 
     return options
 
 
-if __name__ == "__main__":
-    # get options and send message
+def check_config_file(ini):
+    """
+    Check config exist.
+    """
+
+    default_ini = "notification_google_calendar.ini"
+    if ini and os.path.exists(ini):  # user config file path
+        return ini
+    elif os.path.exists(os.path.join("/etc", default_ini)):  # default config file path in /etc
+        return os.path.join("/etc", default_ini)
+    else:
+        sys.stderr.write(u"ERROR: Config file %s don't exist\n" % ini)
+        sys.exit(0)
+
+
+def parse_config(configini, options):
+    """
+    Get settings from config file.
+    """
+
+    config = ConfigParser.ConfigParser()
+    try:
+        config.read(configini)
+    except Exception:
+        print "ERROR: Config file read %s error." % configini
+        sys.exit(-1)
+
+    configdata = {
+        'secrets': config.get('GOOGLE', 'secrets'),
+        'scope': config.get('GOOGLE', 'scope'),
+        'credentials': config.get('nagios-notification-google-calendar', 'credentials'),
+    }
+
+    # check mandatory config options supplied
+    mandatories = ["secrets", "scope", "credentials", ]
+    if not all(configdata[mandatory] for mandatory in mandatories):
+        sys.stdout.write(u"Mandatory config option missing\n")
+        sys.exit(0)
+
+    return configdata
+
+
+def get_google_credentials(options, config):
+    """
+    Get google API credentials for user.
+    """
+
+    if options.get_google_credentials:
+
+        flow = flow_from_clientsecrets(config['secrets'], scope=config['scope'], redirect_uri="oob")
+        sys.stdout.write(u'Follow this URL: %s and grant access\n' % flow.step1_get_authorize_url())
+        token = raw_input(u'Enter token:')
+        credentials = flow.step2_exchange(token)
+        storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
+        storage.put(credentials)
+        credentials.set_store(storage)
+
+    else:
+        storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
+        credentials = storage.get()
+
+    return credentials
+
+
+def main():
+    """
+    Processing notification call main function.
+    """
+
     options = parse_cmd_line()
+    config = parse_config(check_config_file(options.config), options)
+    credentials = get_google_credentials(options, config)
+
+
+if __name__ == "__main__":
+    main()

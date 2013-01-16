@@ -1,0 +1,5 @@
+# nagios-notification-google-calendar
+# requirments.txt
+
+gdata==2.0.17
+oauth2client==1.0
