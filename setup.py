@@ -6,7 +6,7 @@
 
 from setuptools import setup, find_packages
 
-from notification_jabber import (
+from notification_google_calendar import (
     __author__,
     __email__,
     __version__,
