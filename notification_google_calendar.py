@@ -30,15 +30,15 @@ try:
     import os
     from optparse import OptionParser
     import ConfigParser
-
+    import datetime
+    import httplib2
     from oauth2client.client import flow_from_clientsecrets
     from oauth2client.file import Storage
-
+    from apiclient.discovery import build
 except ImportError, err:
     sys.stderr.write("ERROR: Couldn't load module. %s\n" % err)
     sys.exit(-1)
 
-__all__ = ['main', ]
 
 # metadata
 __author__ = "Alexei Andrushievich"
@@ -46,8 +46,12 @@ __email__ = "vint21h@vint21h.pp.ua"
 __licence__ = "GPLv3 or later"
 __description__ = "Notifications via Google Calendar Nagios plugin"
 __url__ = "https://github.com/vint21h/nagios-notification-google-calendar"
-VERSION = (0, 0, 0)
+VERSION = (0, 0, 1)
 __version__ = '.'.join(map(str, VERSION))
+
+
+# global variables
+SCOPE = 'https://www.googleapis.com/auth/calendar'
 
 
 def parse_cmd_line():
@@ -62,6 +66,9 @@ def parse_cmd_line():
                                         type="string", default="",
                                         metavar="RECIPIENT",
                                         help="user")
+    parser.add_option("-C", "--calendar", metavar="CALENDAR", action="store",
+                                        type="string", dest="calendar",
+                                        default="", help="google calendar id")
     parser.add_option("-m", "--message", metavar="MESSAGE", action="store",
                                         type="string", dest="message",
                                         default="", help="message text")
@@ -81,6 +88,7 @@ def parse_cmd_line():
     mandatories = ["username", "config", ]
     # check mandatory command line options supplied
     if not options.get_google_credentials:
+        mandatories.append("calendar")  # set calendar option required when sending message
         mandatories.append("message")  # set message option required when sending message
     if not all(options.__dict__[mandatory] for mandatory in mandatories):
         sys.stdout.write(u"Mandatory command line option missing\n")
@@ -104,7 +112,7 @@ def check_config_file(ini):
         sys.exit(0)
 
 
-def parse_config(configini, options):
+def parse_config(configini):
     """
     Get settings from config file.
     """
@@ -118,12 +126,14 @@ def parse_config(configini, options):
 
     configdata = {
         'secrets': config.get('GOOGLE', 'secrets'),
-        'scope': config.get('GOOGLE', 'scope'),
         'credentials': config.get('nagios-notification-google-calendar', 'credentials'),
+        'start': config.get('nagios-notification-google-calendar', 'start') if config.get('nagios-notification-google-calendar', 'start') else 5,
+        'end': config.get('nagios-notification-google-calendar', 'end') if config.get('nagios-notification-google-calendar', 'end') else 10,
+        'message': config.get('nagios-notification-google-calendar', 'message') if config.get('nagios-notification-google-calendar', 'message') else 2,
     }
 
     # check mandatory config options supplied
-    mandatories = ["secrets", "scope", "credentials", ]
+    mandatories = ["secrets", "credentials", "start", "end", "message", ]
     if not all(configdata[mandatory] for mandatory in mandatories):
         sys.stdout.write(u"Mandatory config option missing\n")
         sys.exit(0)
@@ -138,8 +148,8 @@ def get_google_credentials(options, config):
 
     if options.get_google_credentials:
 
-        flow = flow_from_clientsecrets(config['secrets'], scope=config['scope'], redirect_uri="oob")
-        sys.stdout.write(u'Follow this URL: %s and grant access\n' % flow.step1_get_authorize_url())
+        flow = flow_from_clientsecrets(config['secrets'], scope=SCOPE, redirect_uri="oob")
+        sys.stdout.write(u'Follow this URL: %s and grant plugin access to calendar.\n' % flow.step1_get_authorize_url())
         token = raw_input(u'Enter token:')
         credentials = flow.step2_exchange(token)
         storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
@@ -153,14 +163,63 @@ def get_google_credentials(options, config):
     return credentials
 
 
+def create_event_datetimes(config):
+    """
+    Create event start and end datetimes.
+    """
+
+    DT_FORMAT = '%Y-%m-%dT%H:%M:00.000+02:00'
+
+    now = datetime.datetime.now()
+
+    return {
+        'start': {
+            'dateTime': (now + datetime.timedelta(minutes=int(config['start']))).strftime(DT_FORMAT),
+        },
+        'end': {
+            'dateTime': (now + datetime.timedelta(minutes=int(config['end']))).strftime(DT_FORMAT),
+        },
+    }
+
+
+def create_event(options, config, credentials):
+    """
+    Create event in calendar with sms reminder.
+    """
+
+    http = credentials.authorize(httplib2.Http())
+    service = build('calendar', 'v3', http=http)
+
+    event = {
+        'summary': options.message,
+        'location': '',
+        'reminders': {
+            "useDefault": False,
+            "overrides": [
+                {
+                    "method": 'sms',
+                    "minutes": config['message'],
+                    },
+                ],
+            }
+    }
+    event.update(create_event_datetimes(config))
+
+    service.events().insert(calendarId=options.calendar, sendNotifications=True, body=event).execute()
+
+
 def main():
     """
     Processing notification call main function.
     """
 
+    # getting info for creating event
     options = parse_cmd_line()
-    config = parse_config(check_config_file(options.config), options)
+    config = parse_config(check_config_file(options.config))
     credentials = get_google_credentials(options, config)
+
+    if not options.get_google_credentials:
+        create_event(options, config, credentials)
 
 
 if __name__ == "__main__":

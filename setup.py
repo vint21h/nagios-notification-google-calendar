@@ -15,14 +15,14 @@ from notification_jabber import (
     __url__,
 )
 
-SHARED_FILES = ['README.rst', 'COPYING', 'CHANGELOG', 'INSTALL', 'TODO', ]
+SHARED_FILES = ['README.rst', 'COPYING', 'CHANGELOG', 'TODO', ]
 
 setup(
     name = "nagios_notification_google_calendar",
     version = __version__,
     packages = find_packages(),
     scripts = ['notification_google_calendar.py', ],
-    install_requires = ['docutils', ],
+    install_requires = ['docutils', 'httplib2', 'oauth2client', 'google-api-python-client', ],
     package_data = {
         '': (SHARED_FILES, ),
     },
