@@ -46,7 +46,7 @@ __email__ = "vint21h@vint21h.pp.ua"
 __licence__ = "GPLv3 or later"
 __description__ = "Notifications via Google Calendar Nagios plugin"
 __url__ = "https://github.com/vint21h/nagios-notification-google-calendar"
-VERSION = (0, 0, 1)
+VERSION = (0, 0, 2)
 __version__ = '.'.join(map(str, VERSION))
 
 
@@ -74,7 +74,8 @@ def parse_cmd_line():
                                         default="", help="message text")
     parser.add_option("-c", "--config", metavar="CONFIG", action="store",
                                         type="string", dest="config",
-                                        help="path to config file")
+                                        help="path to config file",
+                                        default="notification_google_calendar.ini")
     parser.add_option("-q", "--quiet", metavar="QUIET", action="store_true",
                                         default=False, dest="quiet",
                                         help="be quiet")
@@ -85,7 +86,7 @@ def parse_cmd_line():
 
     options = parser.parse_args(sys.argv)[0]
 
-    mandatories = ["username", "config", ]
+    mandatories = ["username", ]
     # check mandatory command line options supplied
     if not options.get_google_credentials:
         mandatories.append("calendar")  # set calendar option required when sending message
@@ -121,16 +122,20 @@ def parse_config(configini):
     try:
         config.read(configini)
     except Exception:
-        print "ERROR: Config file read %s error." % configini
+        sys.stderr.write(u"ERROR: Config file read %s error." % configini)
         sys.exit(-1)
 
-    configdata = {
-        'secrets': config.get('GOOGLE', 'secrets'),
-        'credentials': config.get('nagios-notification-google-calendar', 'credentials'),
-        'start': config.get('nagios-notification-google-calendar', 'start') if config.get('nagios-notification-google-calendar', 'start') else 5,
-        'end': config.get('nagios-notification-google-calendar', 'end') if config.get('nagios-notification-google-calendar', 'end') else 10,
-        'message': config.get('nagios-notification-google-calendar', 'message') if config.get('nagios-notification-google-calendar', 'message') else 2,
-    }
+    try:
+        configdata = {
+            'secrets': config.get('GOOGLE', 'secrets'),
+            'credentials': config.get('nagios-notification-google-calendar', 'credentials'),
+            'start': config.get('nagios-notification-google-calendar', 'start'),
+            'end': config.get('nagios-notification-google-calendar', 'end'),
+            'message': config.get('nagios-notification-google-calendar', 'message'),
+        }
+    except ConfigParser.NoOptionError, err:
+        sys.stderr.write(u"ERROR: Config file missing option error. %s\n" % err)
+        sys.exit(-1)
 
     # check mandatory config options supplied
     mandatories = ["secrets", "credentials", "start", "end", "message", ]
@@ -146,19 +151,23 @@ def get_google_credentials(options, config):
     Get google API credentials for user.
     """
 
-    if options.get_google_credentials:
+    try:
+        if options.get_google_credentials:
 
-        flow = flow_from_clientsecrets(config['secrets'], scope=SCOPE, redirect_uri="oob")
-        sys.stdout.write(u'Follow this URL: %s and grant plugin access to calendar.\n' % flow.step1_get_authorize_url())
-        token = raw_input(u'Enter token:')
-        credentials = flow.step2_exchange(token)
-        storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
-        storage.put(credentials)
-        credentials.set_store(storage)
+            flow = flow_from_clientsecrets(config['secrets'], scope=SCOPE, redirect_uri="oob")
+            sys.stdout.write(u'Follow this URL: %s and grant plugin access to calendar.\n' % flow.step1_get_authorize_url())
+            token = raw_input(u'Enter token:')
+            credentials = flow.step2_exchange(token)
+            storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
+            storage.put(credentials)
+            credentials.set_store(storage)
 
-    else:
-        storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
-        credentials = storage.get()
+        else:
+            storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
+            credentials = storage.get()
+    except Exception, err:
+        sys.stderr.write(u"ERROR: Getting google API credentials error. %s\n" % err)
+        sys.exit(-1)
 
     return credentials
 
@@ -187,25 +196,29 @@ def create_event(options, config, credentials):
     Create event in calendar with sms reminder.
     """
 
-    http = credentials.authorize(httplib2.Http())
-    service = build('calendar', 'v3', http=http)
+    try:
+        http = credentials.authorize(httplib2.Http())
+        service = build('calendar', 'v3', http=http)
 
-    event = {
-        'summary': options.message,
-        'location': '',
-        'reminders': {
-            "useDefault": False,
-            "overrides": [
-                {
-                    "method": 'sms',
-                    "minutes": config['message'],
-                    },
-                ],
-            }
-    }
-    event.update(create_event_datetimes(config))
+        event = {
+            'summary': options.message,
+            'location': '',
+            'reminders': {
+                "useDefault": False,
+                "overrides": [
+                    {
+                        "method": 'sms',
+                        "minutes": config['message'],
+                        },
+                    ],
+                }
+        }
+        event.update(create_event_datetimes(config))
 
-    service.events().insert(calendarId=options.calendar, sendNotifications=True, body=event).execute()
+        service.events().insert(calendarId=options.calendar, sendNotifications=True, body=event).execute()
+    except Exception, err:
+        sys.stderr.write(u"ERROR: Creating google calendar event error. %s\n" % err)
+        sys.exit(-1)
 
 
 def main():
