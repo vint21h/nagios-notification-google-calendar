@@ -21,17 +21,17 @@ Configuration
 
 ::
 
-# 'notify-host-by-sms' command
-define command{
-    command_name    notify-host-by-sms
-    command_line    $NG$/notification_google_calendar.py -u $CONTACTNAME$ -m "Host '$HOSTALIAS$' is $HOSTSTATE$ - Info: $HOSTOUTPUT$" -C $CONTACTADDRESS1$
-}
+    # 'notify-host-by-sms' command
+    define command{
+        command_name    notify-host-by-sms
+        command_line    $NG$/notification_google_calendar.py -u $CONTACTNAME$ -m "Host '$HOSTALIAS$' is $HOSTSTATE$ - Info: $HOSTOUTPUT$" -C $CONTACTADDRESS1$
+    }
 
-# 'notify-by-sms' command
-define command{
-    command_name    notify-by-sms
-    command_line    $NG$/notification_google_calendar.py -u $CONTACTNAME$ -m "$NOTIFICATIONTYPE$ $HOSTNAME$ $SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$ $LONGDATETIME$" -C $C
-}
+    # 'notify-by-sms' command
+    define command{
+        command_name    notify-by-sms
+        command_line    $NG$/notification_google_calendar.py -u $CONTACTNAME$ -m "$NOTIFICATIONTYPE$ $HOSTNAME$ $SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$ $LONGDATETIME$" -C $C
+    }
 
 * Go to https://code.google.com/apis/console/ and create new project.
 * Enable calendar API for project.
