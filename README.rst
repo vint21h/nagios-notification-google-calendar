@@ -38,10 +38,10 @@ define command{
 * Create an OAuth 2.0 client ID for project with ``Installed application`` type and download JSON client secrets file.
 * Populate ``/etc/notification_google_calendar.ini`` with your settings.
 * Modify contacts definitions:
-    Add ``addressX`` option to contact definition with contact google calendar ID.
-    Get and save credentials by run ``notification_google_calendar.py`` with ``-g`` option.
-    Add commands to the lists of service and host notifications commands for contact.
-    Configure google calendar for mobile devices.
+    * Add ``addressX`` option to contact definition with contact google calendar ID.
+    * Get and save credentials by run ``notification_google_calendar.py`` with ``-g`` option.
+    * Add commands to the lists of service and host notifications commands for contact.
+    * Configure google calendar for mobile devices.
 
 Licensing
 ---------
