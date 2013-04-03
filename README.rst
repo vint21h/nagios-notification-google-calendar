@@ -33,6 +33,16 @@ define command{
     command_line    $NG$/notification_google_calendar.py -u $CONTACTNAME$ -m "$NOTIFICATIONTYPE$ $HOSTNAME$ $SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$ $LONGDATETIME$" -C $C
 }
 
+* Go to https://code.google.com/apis/console/ and create new project.
+* Enable calendar API for project.
+* Create an OAuth 2.0 client ID for project with ``Installed application`` type and download JSON client secrets file.
+* Populate ``/etc/notification_google_calendar.ini`` with your settings.
+* Modify contacts definitions:
+    Add ``addressX`` option to contact definition with contact google calendar ID.
+    Get and save credentials by run ``notification_google_calendar.py`` with ``-g`` option.
+    Add commands to the lists of service and host notifications commands for contact.
+    Configure google calendar for mobile devices.
+
 Licensing
 ---------
 nagios-notification-google-calendar is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

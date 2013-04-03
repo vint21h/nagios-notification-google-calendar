@@ -47,7 +47,7 @@ __email__ = "vint21h@vint21h.pp.ua"
 __licence__ = "GPLv3 or later"
 __description__ = "Notifications via Google Calendar Nagios plugin"
 __url__ = "https://github.com/vint21h/nagios-notification-google-calendar"
-VERSION = (0, 1, 0)
+VERSION = (0, 1, 1)
 __version__ = '.'.join(map(str, VERSION))
 
 
