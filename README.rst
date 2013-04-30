@@ -16,7 +16,6 @@ Installation
 Configuration
 -------------
 * Read and understand Nagios documentation.
-* Add Nagios variable ``$NG$=/usr/bin/notification_google_calendar.py``
 * Create Nagios commands definitions like this:
 
 ::
@@ -24,19 +23,19 @@ Configuration
     # 'notify-host-by-sms' command
     define command{
         command_name    notify-host-by-sms
-        command_line    $NG$/notification_google_calendar.py -u $CONTACTNAME$ -m "Host '$HOSTALIAS$' is $HOSTSTATE$ - Info: $HOSTOUTPUT$" -C $CONTACTADDRESS1$
+        command_line    /usr/bin/notification_google_calendar.py -u $CONTACTNAME$ -m "Host '$HOSTALIAS$' is $HOSTSTATE$ - Info: $HOSTOUTPUT$" -C $CONTACTADDRESS1$
     }
 
     # 'notify-by-sms' command
     define command{
         command_name    notify-by-sms
-        command_line    $NG$/notification_google_calendar.py -u $CONTACTNAME$ -m "$NOTIFICATIONTYPE$ $HOSTNAME$ $SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$ $LONGDATETIME$" -C $C
+        command_line    /usr/bin/notification_google_calendar.py -u $CONTACTNAME$ -m "$NOTIFICATIONTYPE$ $HOSTNAME$ $SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$ $LONGDATETIME$" -C $C
     }
 
 * Go to https://code.google.com/apis/console/ and create new project.
 * Enable calendar API for project.
 * Create an OAuth 2.0 client ID for project with ``Installed application`` type and download JSON client secrets file.
-* Populate ``/etc/notification_google_calendar.ini`` with your settings.
+* Populate ``/etc/nagios/notification_google_calendar.ini`` with your settings. Attention: nagios user must have ``notification_google_calendar.ini`` read permissions, and credentials directory read/write permissions.
 * Modify contacts definitions:
     * Add ``addressX`` option to contact definition with contact google calendar ID.
     * Get and save credentials by run ``notification_google_calendar.py`` with ``-g`` option.
