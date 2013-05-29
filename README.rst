@@ -35,7 +35,7 @@ Configuration
 * Go to https://code.google.com/apis/console/ and create new project.
 * Enable calendar API for project.
 * Create an OAuth 2.0 client ID for project with ``Installed application`` type and download JSON client secrets file.
-* Populate ``/etc/nagios/notification_google_calendar.ini`` with your settings. Attention: nagios user must have ``notification_google_calendar.ini`` read permissions, and credentials directory read/write permissions.
+* Copy ``/usr/share/doc/nagios_notification_google_calendar/notification_google_calendar.ini`` to ``/etc/nagios`` with your settings. Attention: nagios user must have ``notification_google_calendar.ini`` read permissions, and credentials directory read/write permissions.
 * Modify contacts definitions:
     * Add ``addressX`` option to contact definition with contact google calendar ID.
     * Get and save credentials by run ``notification_google_calendar.py`` with ``-g`` option.

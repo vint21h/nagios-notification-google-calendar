@@ -39,15 +39,10 @@ except ImportError, err:
     sys.stderr.write("ERROR: Couldn't load module. %s\n" % err)
     sys.exit(-1)
 
-__all__ = ['parse_options', 'parse_config', 'get_google_credentials', 'create_event_datetimes', 'create_event', 'main', ]
+__all__ = ['main', ]
 
 # metadata
-__author__ = "Alexei Andrushievich"
-__email__ = "vint21h@vint21h.pp.ua"
-__licence__ = "GPLv3 or later"
-__description__ = "Notifications via Google Calendar Nagios plugin"
-__url__ = "https://github.com/vint21h/nagios-notification-google-calendar"
-VERSION = (0, 1, 4)
+VERSION = (0, 1, 5)
 __version__ = '.'.join(map(str, VERSION))
 
 
@@ -107,6 +102,7 @@ def parse_config(options):
     """
     Get settings from config file.
     """
+
     if os.path.exists(options.config):
         config = ConfigParser.ConfigParser()
         try:
