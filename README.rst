@@ -2,7 +2,7 @@
 .. README.rst
 
 A nagios-notification-google-calendar documentation
-===================================
+===================================================
 
     *nagios-notification-google-calendar is a Nagios-plugin that send Nagios notifications via google calendar SMS reminder*
 
@@ -11,7 +11,7 @@ A nagios-notification-google-calendar documentation
 Installation
 ------------
 * Obtain your copy of source code from git repository: ``git clone https://github.com/vint21h/nagios-notification-google-calendar.git``. Or download latest release from https://github.com/vint21h/nagios-notification-google-calendar/tags.
-* Run ``python ./setup.py install`` from repository source tree or unpacked archive under root user.
+* Run ``python ./setup.py install`` from repository source tree or unpacked archive under root user. Or use pip: ``pip install nagios-notification-google-calendar``.
 
 Configuration
 -------------
@@ -35,7 +35,7 @@ Configuration
 * Go to https://code.google.com/apis/console/ and create new project.
 * Enable calendar API for project.
 * Create an OAuth 2.0 client ID for project with ``Installed application`` type and download JSON client secrets file.
-* Copy ``/usr/share/doc/nagios_notification_google_calendar/notification_google_calendar.ini`` to ``/etc/nagios`` with your settings. Attention: nagios user must have ``notification_google_calendar.ini`` read permissions, and credentials directory read/write permissions.
+* Copy ``/usr/share/doc/nagios-notification-google-calendar/notification_google_calendar.ini`` to ``/etc/nagios`` with your settings. Attention: nagios user must have ``notification_google_calendar.ini`` read permissions, and credentials directory read/write permissions.
 * Modify contacts definitions:
     * Add ``addressX`` option to contact definition with contact google calendar ID.
     * Get and save credentials by run ``notification_google_calendar.py`` with ``-g`` option.

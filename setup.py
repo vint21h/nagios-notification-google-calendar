@@ -7,22 +7,22 @@
 from setuptools import setup, find_packages
 
 # metadata
-VERSION = (0, 1, 5)
+VERSION = (0, 1, 6)
 __version__ = '.'.join(map(str, VERSION))
 
 DATA = ['README.rst', 'COPYING', 'notification_google_calendar.ini', ]
 
 setup(
-    name="nagios_notification_google_calendar",
+    name="nagios-notification-google-calendar",
     version=__version__,
     packages=find_packages(),
     scripts=['notification_google_calendar.py', ],
     install_requires=['httplib2 == 0.7.7', 'oauth2client == 1.0', 'google-api-python-client == 1.0', ],
     package_data={
-        'nagios_notification_google_calendar': DATA,
+        'nagios-notification-google-calendar': DATA,
     },
     data_files=[
-        ('usr/share/doc/nagios_notification_google_calendar/', DATA),
+        ('usr/share/doc/nagios-notification-google-calendar/', DATA),
     ],
     author="Alexei Andrushievich",
     author_email="vint21h@vint21h.pp.ua",
@@ -30,7 +30,7 @@ setup(
     long_description=open('README.rst').read(),
     license="GPLv3 or later",
     url="https://github.com/vint21h/nagios-notification-google-calendar",
-    download_url="https://github.com/vint21h/nagios-notification-google-calendar/tags",
+    download_url="https://github.com/vint21h/nagios-notification-google-calendar/archive/%s" % __version__,
     zip_safe=False,
     include_package_data=True,
     classifiers=[
@@ -39,7 +39,7 @@ setup(
         "Intended Audience :: System Administrators",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: Unix",
-        "Programming Language :: Python :: 2.6"
+        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Topic :: System :: Monitoring",
         "Topic :: Utilities",
