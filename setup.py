@@ -7,7 +7,7 @@
 from setuptools import setup, find_packages
 
 # metadata
-VERSION = (0, 1, 6)
+VERSION = (0, 1, 7)
 __version__ = '.'.join(map(str, VERSION))
 
 DATA = ['README.rst', 'COPYING', 'notification_google_calendar.ini', ]
@@ -30,7 +30,7 @@ setup(
     long_description=open('README.rst').read(),
     license="GPLv3 or later",
     url="https://github.com/vint21h/nagios-notification-google-calendar",
-    download_url="https://github.com/vint21h/nagios-notification-google-calendar/archive/%s" % __version__,
+    download_url="https://github.com/vint21h/nagios-notification-google-calendar/archive/%s.tar.gz" % __version__,
     zip_safe=False,
     include_package_data=True,
     classifiers=[

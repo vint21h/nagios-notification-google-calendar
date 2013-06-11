@@ -42,7 +42,7 @@ except ImportError, err:
 __all__ = ['main', ]
 
 # metadata
-VERSION = (0, 1, 6)
+VERSION = (0, 1, 7)
 __version__ = '.'.join(map(str, VERSION))
 
 
