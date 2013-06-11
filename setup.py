@@ -7,7 +7,7 @@
 from setuptools import setup, find_packages
 
 # metadata
-VERSION = (0, 1, 7)
+VERSION = (0, 1, 8)
 __version__ = '.'.join(map(str, VERSION))
 
 DATA = ['README.rst', 'COPYING', 'notification_google_calendar.ini', ]
@@ -22,7 +22,7 @@ setup(
         'nagios-notification-google-calendar': DATA,
     },
     data_files=[
-        ('usr/share/doc/nagios-notification-google-calendar/', DATA),
+        ('share/doc/nagios-notification-google-calendar/', DATA),
     ],
     author="Alexei Andrushievich",
     author_email="vint21h@vint21h.pp.ua",
