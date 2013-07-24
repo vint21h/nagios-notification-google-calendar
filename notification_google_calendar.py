@@ -42,13 +42,13 @@ except ImportError, err:
 __all__ = ['main', ]
 
 # metadata
-VERSION = (0, 1, 8)
+VERSION = (0, 2, 0)
 __version__ = '.'.join(map(str, VERSION))
 
 
 # global variables
 SCOPE = 'https://www.googleapis.com/auth/calendar'
-DT_FORMAT = '%Y-%m-%dT%H:%M:00.000+02:00'
+DT_FORMAT = '%Y-%m-%dT%H:%M:00.000'
 
 
 def parse_options():
@@ -61,28 +61,32 @@ def parse_options():
     parser = OptionParser(version=version)
     parser.add_option(
         "-u", "--username", action="store", dest="username",
-        type="string", default="", metavar="RECIPIENT", help="user"
+        type="string", default="", metavar="RECIPIENT", help=u"user"
     )
     parser.add_option(
         "-C", "--calendar", metavar="CALENDAR", action="store",
-        type="string", dest="calendar", default="", help="google calendar ID"
+        type="string", dest="calendar", default=u"", help=u"google calendar ID"
+    )
+    parser.add_option(
+        "-t", "--timezone", metavar="TIMEZONE", action="store",
+        type="string", dest="timezone", default=u"", help=u"user timezone"
     )
     parser.add_option(
         "-m", "--message", metavar="MESSAGE", action="store",
-        type="string", dest="message", default="", help="message text"
+        type="string", dest="message", default=u"", help=u"message text"
     )
     parser.add_option(
         "-c", "--config", metavar="CONFIG", action="store",
-        type="string", dest="config", help="path to config file",
+        type="string", dest="config", help=u"path to config file",
         default="/etc/nagios/notification_google_calendar.ini")
     parser.add_option(
         "-q", "--quiet", metavar="QUIET", action="store_true",
-        default=False, dest="quiet", help="be quiet"
+        default=False, dest="quiet", help=u"be quiet"
     )
     parser.add_option(
         "-g", "--get-google-credentials", metavar="GET-GOOGLE-CREDENTIALS",
         action="store_true", default=False, dest="get_google_credentials",
-        help="get google API credentials for user"
+        help=u"get google API credentials for user"
     )
 
     options = parser.parse_args(sys.argv)[0]
@@ -92,6 +96,7 @@ def parse_options():
     if not options.get_google_credentials:
         mandatories.append("calendar")  # set calendar option required when sending message
         mandatories.append("message")  # set message option required when sending message
+        mandatories.append("timezone")  # set timezone option required when sending message
     if not all(options.__dict__[mandatory] for mandatory in mandatories):
         parser.error("Required command line option missing\n")
 
@@ -164,7 +169,7 @@ def get_google_credentials(options, config):
     return credentials
 
 
-def create_event_datetimes(config):
+def create_event_datetimes(options, config):
     """
     Create event start and end datetimes.
     """
@@ -174,9 +179,11 @@ def create_event_datetimes(config):
     return {
         'start': {
             'dateTime': (now + datetime.timedelta(minutes=int(config['start']))).strftime(DT_FORMAT),
+            'timeZone': options.timezone,
         },
         'end': {
             'dateTime': (now + datetime.timedelta(minutes=int(config['end']))).strftime(DT_FORMAT),
+            'timeZone': options.timezone,
         },
     }
 
@@ -203,7 +210,7 @@ def create_event(options, config, credentials):
                 ],
             }
         }
-        event.update(create_event_datetimes(config))
+        event.update(create_event_datetimes(options, config))
 
         service.events().insert(calendarId=options.calendar, sendNotifications=True, body=event).execute()
     except Exception, err:

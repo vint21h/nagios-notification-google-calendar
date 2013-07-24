@@ -23,13 +23,13 @@ Configuration
     # 'notify-host-by-sms' command
     define command{
         command_name    notify-host-by-sms
-        command_line    /usr/bin/notification_google_calendar.py -u $CONTACTNAME$ -m "Host '$HOSTALIAS$' is $HOSTSTATE$ - Info: $HOSTOUTPUT$" -C $CONTACTADDRESS1$
+        command_line    /usr/bin/notification_google_calendar.py -u $CONTACTNAME$ -m "Host '$HOSTALIAS$' is $HOSTSTATE$ - Info: $HOSTOUTPUT$" -C $CONTACTADDRESS1$ -t $CONTACTADDRESS2$
     }
 
     # 'notify-by-sms' command
     define command{
         command_name    notify-by-sms
-        command_line    /usr/bin/notification_google_calendar.py -u $CONTACTNAME$ -m "$NOTIFICATIONTYPE$ $HOSTNAME$ $SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$ $LONGDATETIME$" -C $C
+        command_line    /usr/bin/notification_google_calendar.py -u $CONTACTNAME$ -m "$NOTIFICATIONTYPE$ $HOSTNAME$ $SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$ $LONGDATETIME$" -C $CONTACTADDRESS1$ -t $CONTACTADDRESS2$
     }
 
 * Go to https://code.google.com/apis/console/ and create new project.
@@ -38,6 +38,7 @@ Configuration
 * Copy ``/usr/share/doc/nagios-notification-google-calendar/notification_google_calendar.ini`` to ``/etc/nagios`` with your settings. Attention: nagios user must have ``notification_google_calendar.ini`` read permissions, and credentials directory read/write permissions.
 * Modify contacts definitions:
     * Add ``addressX`` option to contact definition with contact google calendar ID.
+    * Add ``addressX`` option to contact definition with contact preferred timezone (in human readable format from TZ database). This is dirty hack, but i don't know how do this better way.
     * Get and save credentials by run ``notification_google_calendar.py`` with ``-g`` option.
     * Add commands to the lists of service and host notifications commands for contact.
     * Configure google calendar for mobile devices.
