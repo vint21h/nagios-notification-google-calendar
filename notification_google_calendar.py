@@ -5,7 +5,7 @@
 # nagios-notification-google-calendar
 # notification_google_calendar.py
 
-# Copyright (c) 2011-2012 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2013-2014 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Notifications via Google Calendar Nagios plugin [https://github.com/vint21h/nagios-notification-google-calendar]
 #
 # This file is part of nagios-notification-google-calendar.
@@ -42,7 +42,7 @@ except ImportError, err:
 __all__ = ['main', ]
 
 # metadata
-VERSION = (0, 2, 0)
+VERSION = (0, 2, 1)
 __version__ = '.'.join(map(str, VERSION))
 
 
