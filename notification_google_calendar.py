@@ -5,7 +5,7 @@
 # nagios-notification-google-calendar
 # notification_google_calendar.py
 
-# Copyright (c) 2013-2014 Alexei Andrushievich <vint21h@vint21h.pp.ua>
+# Copyright (c) 2013-2015 Alexei Andrushievich <vint21h@vint21h.pp.ua>
 # Notifications via Google Calendar Nagios plugin [https://github.com/vint21h/nagios-notification-google-calendar]
 #
 # This file is part of nagios-notification-google-calendar.
@@ -24,6 +24,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import unicode_literals
 import sys
 
 try:
@@ -35,20 +36,20 @@ try:
     from oauth2client.client import flow_from_clientsecrets
     from oauth2client.file import Storage
     from apiclient.discovery import build
-except ImportError, err:
-    sys.stderr.write("ERROR: Couldn't load module. %s\n" % err)
+except (ImportError, ), err:
+    sys.stderr.write("ERROR: Couldn't load module. {err}\n".format(err=err))
     sys.exit(-1)
 
-__all__ = ['main', ]
+__all__ = ["main", ]
 
 # metadata
-VERSION = (0, 2, 1)
-__version__ = '.'.join(map(str, VERSION))
+VERSION = (0, 3, 0)
+__version__ = ".".join(map(str, VERSION))
 
 
 # global variables
-SCOPE = 'https://www.googleapis.com/auth/calendar'
-DT_FORMAT = '%Y-%m-%dT%H:%M:00.000'
+SCOPE = "https://www.googleapis.com/auth/calendar"
+DT_FORMAT = "%Y-%m-%dT%H:%M:00.000"
 
 
 def parse_options():
@@ -57,36 +58,36 @@ def parse_options():
     """
 
     # build options and help
-    version = "%%prog %s" % __version__
+    version = "%%prog {version}".format(version=__version__)
     parser = OptionParser(version=version)
     parser.add_option(
         "-u", "--username", action="store", dest="username",
-        type="string", default="", metavar="RECIPIENT", help=u"user"
+        type="string", default="", metavar="RECIPIENT", help="user"
     )
     parser.add_option(
         "-C", "--calendar", metavar="CALENDAR", action="store",
-        type="string", dest="calendar", default=u"", help=u"google calendar ID"
+        type="string", dest="calendar", default="", help="google calendar ID"
     )
     parser.add_option(
         "-t", "--timezone", metavar="TIMEZONE", action="store",
-        type="string", dest="timezone", default=u"", help=u"user timezone"
+        type="string", dest="timezone", default="", help="user timezone"
     )
     parser.add_option(
         "-m", "--message", metavar="MESSAGE", action="store",
-        type="string", dest="message", default=u"", help=u"message text"
+        type="string", dest="message", default="", help="message text"
     )
     parser.add_option(
         "-c", "--config", metavar="CONFIG", action="store",
-        type="string", dest="config", help=u"path to config file",
+        type="string", dest="config", help="path to config file",
         default="/etc/nagios/notification_google_calendar.ini")
     parser.add_option(
         "-q", "--quiet", metavar="QUIET", action="store_true",
-        default=False, dest="quiet", help=u"be quiet"
+        default=False, dest="quiet", help="be quiet"
     )
     parser.add_option(
         "-g", "--get-google-credentials", metavar="GET-GOOGLE-CREDENTIALS",
         action="store_true", default=False, dest="get_google_credentials",
-        help=u"get google API credentials for user"
+        help="get google API credentials for user"
     )
 
     options = parser.parse_args(sys.argv)[0]
@@ -112,22 +113,22 @@ def parse_config(options):
         config = ConfigParser.ConfigParser()
         try:
             config.read(options.config)
-        except Exception:
+        except Exception, err:
             if not options.quiet:
-                sys.stderr.write("ERROR: Config file read %s error." % options.config)
+                sys.stderr.write("ERROR: Config file read {config} error. {err}".format(config=options.config, err=err))
             sys.exit(-1)
 
         try:
             configdata = {
-                'secrets': config.get('GOOGLE', 'secrets'),
-                'credentials': config.get('nagios-notification-google-calendar', 'credentials'),
-                'start': config.get('nagios-notification-google-calendar', 'start'),
-                'end': config.get('nagios-notification-google-calendar', 'end'),
-                'message': config.get('nagios-notification-google-calendar', 'message'),
+                "secrets": config.get("GOOGLE", "secrets"),
+                "credentials": config.get("nagios-notification-google-calendar", "credentials"),
+                "start": config.get("nagios-notification-google-calendar", "start"),
+                "end": config.get("nagios-notification-google-calendar", "end"),
+                "message": config.get("nagios-notification-google-calendar", "message"),
             }
         except ConfigParser.NoOptionError, err:
             if not options.quiet:
-                sys.stderr.write("ERROR: Config file missing option error. %s\n" % err)
+                sys.stderr.write("ERROR: Config file missing option error. {err}\n".format(err=err))
             sys.exit(-1)
 
         # check mandatory config options supplied
@@ -140,7 +141,7 @@ def parse_config(options):
         return configdata
     else:
         if not options.quiet:
-            sys.stderr.write("ERROR: Config file %s does not exist\n" % options.config)
+            sys.stderr.write("ERROR: Config file {config} does not exist\n".format(config=options.config))
         sys.exit(0)
 
 
@@ -151,19 +152,19 @@ def get_google_credentials(options, config):
 
     try:
         if options.get_google_credentials:
-            flow = flow_from_clientsecrets(config['secrets'], scope=SCOPE, redirect_uri="oob")
-            sys.stdout.write('Follow this URL: %s and grant access to calendar.\n' % flow.step1_get_authorize_url())
-            token = raw_input('Enter token:')
+            flow = flow_from_clientsecrets(config["secrets"], scope=SCOPE, redirect_uri="oob")
+            sys.stdout.write("Follow this URL: {url} and grant access to calendar.\n".format(url=flow.step1_get_authorize_url()))
+            token = raw_input("Enter token:")
             credentials = flow.step2_exchange(token)
-            storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
+            storage = Storage(os.path.join(config["credentials"], "{username}.json".format(username=options.username)))
             storage.put(credentials)
             credentials.set_store(storage)
         else:
-            storage = Storage(os.path.join(config['credentials'], '%s.json' % options.username))
+            storage = Storage(os.path.join(config["credentials"], "{username}.json".format(username=options.username)))
             credentials = storage.get()
     except Exception, err:
         if not options.quiet:
-            sys.stderr.write("ERROR: Getting google API credentials error. %s\n" % err)
+            sys.stderr.write("ERROR: Getting google API credentials error. {err}\n".format(err=err))
         sys.exit(-1)
 
     return credentials
@@ -177,13 +178,13 @@ def create_event_datetimes(options, config):
     now = datetime.datetime.now()
 
     return {
-        'start': {
-            'dateTime': (now + datetime.timedelta(minutes=int(config['start']))).strftime(DT_FORMAT),
-            'timeZone': options.timezone,
+        "start": {
+            "dateTime": (now + datetime.timedelta(minutes=int(config["start"]))).strftime(DT_FORMAT),
+            "timeZone": options.timezone,
         },
-        'end': {
-            'dateTime': (now + datetime.timedelta(minutes=int(config['end']))).strftime(DT_FORMAT),
-            'timeZone': options.timezone,
+        "end": {
+            "dateTime": (now + datetime.timedelta(minutes=int(config["end"]))).strftime(DT_FORMAT),
+            "timeZone": options.timezone,
         },
     }
 
@@ -195,17 +196,17 @@ def create_event(options, config, credentials):
 
     try:
         http = credentials.authorize(httplib2.Http())
-        service = build('calendar', 'v3', http=http)
+        service = build("calendar", "v3", http=http)
 
         event = {
-            'summary': options.message,
-            'location': '',
-            'reminders': {
+            "summary": options.message,
+            "location": "",
+            "reminders": {
                 "useDefault": False,
                 "overrides": [
                     {
-                        "method": 'sms',
-                        "minutes": config['message'],
+                        "method": "sms",
+                        "minutes": config["message"],
                     },
                 ],
             }
@@ -215,7 +216,7 @@ def create_event(options, config, credentials):
         service.events().insert(calendarId=options.calendar, sendNotifications=True, body=event).execute()
     except Exception, err:
         if not options.quiet:
-            sys.stderr.write("ERROR: Creating google calendar event error. %s\n" % err)
+            sys.stderr.write("ERROR: Creating google calendar event error. {err}\n".format(err=err))
         sys.exit(-1)
 
 
@@ -234,4 +235,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
