@@ -17,7 +17,7 @@ setup(
     version=__version__,
     packages=find_packages(),
     scripts=["notification_google_calendar.py", ],
-    install_requires=["httplib2 == 0.7.7", "oauth2client == 1.0", "google-api-python-client == 1.0", ],
+    install_requires=["httplib2 == 0.18.0", "oauth2client == 1.0", "google-api-python-client == 1.0", ],
     package_data={
         "nagios-notification-google-calendar": DATA,
     },
